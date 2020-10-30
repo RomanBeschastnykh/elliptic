@@ -137,4 +137,3 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
 
 }
 
-

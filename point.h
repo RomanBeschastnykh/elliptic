@@ -80,5 +80,8 @@ void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_m
 **/
 int isMontCurvePoint(struct montgomeryEllipticCurve* mec);
 
+
+void copy(struct point* copy, struct point* original);
+
 #endif
 

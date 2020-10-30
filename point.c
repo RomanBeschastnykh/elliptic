@@ -146,3 +146,8 @@ int isMontCurvePoint(struct montgomeryEllipticCurve* mec){
    gcry_mpi_release(rightPart);
    gcry_mpi_release(tmp);
 };
+
+
+void copy(struct point* copy, struct point* original){
+    //copy->x = gcry_mpi_copy(original->x);
+}
