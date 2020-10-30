@@ -1,4 +1,5 @@
 #include "point.h"
+#include "param.h"
 #include <gcrypt.h>
 #include <stdio.h>
 
@@ -17,21 +18,21 @@ void createGostCurve256(struct montgomeryEllipticCurve* mec){
 
    // модуль эллиптической кривой
    gcry_mpi_t p = gcry_mpi_new(0);
-   gcry_mpi_scan(&p, GCRYMPI_FMT_HEX, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD97", 0, 0);
+   gcry_mpi_scan(&p, GCRYMPI_FMT_HEX, P256, 0, 0);
    
    // Коэффициенты в кривой формы Эдвардса - e, d
    gcry_mpi_t e = gcry_mpi_new(0);
-   gcry_mpi_scan(&e, GCRYMPI_FMT_HEX, "1", 0, 0);
+   gcry_mpi_scan(&e, GCRYMPI_FMT_HEX, E256, 0, 0);
    
    gcry_mpi_t d = gcry_mpi_new(0);
-   gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, "605F6B7C183FA81578BC39CFAD518132B9DF62897009AF7E522C32D6DC7BFFB", 0, 0);
+   gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, D256, 0, 0);
    
    // Координаты точки в кривой формы Эдвардса - u, v
    gcry_mpi_t u = gcry_mpi_new(0);
-   gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, "D", 0, 0);
+   gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, U256, 0, 0);
       
    gcry_mpi_t v = gcry_mpi_new(0);
-   gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, "60CA1E32AA475B348488C38FAB07649CE7EF8DBE87F22E81F92B2592DBA300E7", 0, 0);
+   gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, V256, 0, 0);
    
    createAnyCurveByParameters(&p, &e, &d, &u, &v, mec); 
 };
@@ -42,21 +43,21 @@ void createGostCurve512(struct montgomeryEllipticCurve* mec){
    
    // модуль эллиптической кривой
    gcry_mpi_t p = gcry_mpi_new(0);
-   gcry_mpi_scan(&p, GCRYMPI_FMT_HEX, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDC7", 0, 0);
+   gcry_mpi_scan(&p, GCRYMPI_FMT_HEX, P512, 0, 0);
    
    // Коэффициенты в кривой формы Эдвардса - e, d
    gcry_mpi_t e = gcry_mpi_new(0);
-   gcry_mpi_scan(&e, GCRYMPI_FMT_HEX, "1", 0, 0);
+   gcry_mpi_scan(&e, GCRYMPI_FMT_HEX, E512, 0, 0);
    
    gcry_mpi_t d = gcry_mpi_new(0);
-   gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, "9E4F5D8C017D8D9F13A5CF3CDF5BFE4DAB402D54198E31EBDE28A0621050439CA6B39E0A515C06B304E2CE43E79E369E91A0CFC2BC2A22B4CA302DBB33EE7550", 0, 0);
+   gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, D512, 0, 0);
    
    // Координаты точки в кривой формы Эдвардса - u, v
    gcry_mpi_t u = gcry_mpi_new(0);
-   gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, "12", 0, 0);
+   gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, U512, 0, 0);
       
    gcry_mpi_t v = gcry_mpi_new(0);
-   gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, "469AF79D1FB1F5E16B99592B77A01E2A0FDFB0D01794368D9A56117F7B38669522DD4B650CF789EEBF068C5D139732F0905622C04B2BAAE7600303EE73001A3D", 0, 0);
+   gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, V512, 0, 0);
    
    createAnyCurveByParameters(&p, &e, &d, &u, &v, mec);
 };

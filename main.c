@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "param.h"
 #include <gcrypt.h>
 #include <stdio.h>
 
@@ -8,8 +9,8 @@ int main() {
     createGostCurve256(&c);
 
     gcry_mpi_t q = gcry_mpi_new(0);
-    //gcry_mpi_scan(&q, GCRYMPI_FMT_HEX, "3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC98CDBA46506AB004C33A9FF5147502CC8EDA9E7A769A12694623CEF47F023ED", 0, 0);
-    gcry_mpi_scan(&q, GCRYMPI_FMT_HEX, "400000000000000000000000000000000FD8CDDFC87B6635C115AF556C360C67", 0, 0);
+    //gcry_mpi_scan(&q, GCRYMPI_FMT_HEX, Q512, 0, 0);
+    gcry_mpi_scan(&q, GCRYMPI_FMT_HEX, Q256, 0, 0);
 
     gcry_mpi_t zero = gcry_mpi_new(0);
     gcry_mpi_scan(&zero, GCRYMPI_FMT_HEX, "0", 0, 0);
