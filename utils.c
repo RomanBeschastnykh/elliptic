@@ -24,13 +24,13 @@ void doubleCurrentPoint(struct montgomeryEllipticCurve* currentPoint) {
 
 
    // Вычисляем значение координаты Y1 = ((X+Z)^2 - (X-Z)^2)*((X-Z)^2 + (A+2)/4 * ((X+Z)^2 - (X-Z)^2))
-   gcry_mpi_subm(summ, summ, diff, currentPoint->p);
-   gcry_mpi_invm(four, four,  currentPoint->p);                    
-   gcry_mpi_add(coeff, currentPoint->A, two);
-   gcry_mpi_mulm(coeff, coeff, four, currentPoint->p);
-   gcry_mpi_mulm(coeff, coeff, summ, currentPoint->p);
-   gcry_mpi_addm(coeff, diff, coeff, currentPoint->p);
-   gcry_mpi_mulm(currentPoint->currPoint.z, summ, coeff, currentPoint->p);
+   gcry_mpi_subm(summ, summ, diff, currentPoint->p);                      // (X+Z)^2 - (X-Z)^2)
+   gcry_mpi_invm(four, four,  currentPoint->p);                           // 4^(-1)
+   gcry_mpi_add(coeff, currentPoint->A, two);                             // A+2 
+   gcry_mpi_mulm(coeff, coeff, four, currentPoint->p);                    // (A+2)/4
+   gcry_mpi_mulm(coeff, coeff, summ, currentPoint->p);                    // (A+2)/4 * ((X+Z)^2 - (X-Z)^2)
+   gcry_mpi_addm(coeff, diff, coeff, currentPoint->p);                    // (X-Z)^2 + (A+2)/4 * ((X+Z)^2 - (X-Z)^2)
+   gcry_mpi_mulm(currentPoint->currPoint.z, summ, coeff, currentPoint->p);// итог
 
    gcry_mpi_release(summ);
    gcry_mpi_release(diff);	
@@ -38,9 +38,7 @@ void doubleCurrentPoint(struct montgomeryEllipticCurve* currentPoint) {
    gcry_mpi_release(two);
    gcry_mpi_release(four);               
    
-}; 
-
-//transform point from plain point to affinian
+};
 
 void sumPoints(struct point* firstPoint, struct point* secondPoint, struct point* initialPoint, gcry_mpi_t* p){ 
 
@@ -53,16 +51,16 @@ void sumPoints(struct point* firstPoint, struct point* secondPoint, struct point
     gcry_mpi_addm(sSumm, secondPoint->x, secondPoint->z, *p); // X2+Z2
     gcry_mpi_addm(fSumm, firstPoint->x, firstPoint->z, *p);   // X1+Z1
     gcry_mpi_subm(sDiff, secondPoint->x, secondPoint->z, *p); // X2-Z2
-    gcry_mpi_mulm(fDiff, fDiff, sSumm, *p);                   // (X3 - Z3)*(X2 + Z2)
-    gcry_mpi_mulm(fSumm, fSumm, sDiff, *p);                   // (X3 - Z3)*(X2 + Z2)
+    gcry_mpi_mulm(fDiff, fDiff, sSumm, *p);                   // (X3-Z3)*(X2+Z2)
+    gcry_mpi_mulm(fSumm, fSumm, sDiff, *p);                   // (X3-Z3)*(X2+Z2)
 
-    gcry_mpi_addm(sSumm, fDiff, fSumm, *p);                   // (X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2)
-    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2))^2
-    gcry_mpi_mulm(firstPoint->x, initialPoint->z, sSumm, *p); // Z1 * ((X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2))^2
+    gcry_mpi_addm(sSumm, fDiff, fSumm, *p);                   // (X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2)
+    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_mulm(firstPoint->x, initialPoint->z, sSumm, *p); // Z1 * ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
 		
-    gcry_mpi_subm(sSumm, fDiff, fSumm, *p);                   // (X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2)
-    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2))^2
-    gcry_mpi_mulm(firstPoint->z, initialPoint->x, sSumm, *p); // Z1 * ((X3 - Z3)*(X2 + Z2) + (X3 - Z3)*(X2 + Z2))^2
+    gcry_mpi_subm(sSumm, fDiff, fSumm, *p);                   // (X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2)
+    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_mulm(firstPoint->z, initialPoint->x, sSumm, *p); // Z1 * ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
 
     gcry_mpi_release(fSumm);
     gcry_mpi_release(sSumm);
@@ -79,6 +77,7 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
 
     int bits = gcry_mpi_get_nbits(*k);
 
+    //копия входной точки на кривой
     struct montgomeryEllipticCurve r;
 
     r.p = gcry_mpi_copy(mec->p);
@@ -88,6 +87,7 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
     r.currPoint.y = gcry_mpi_new(0);
     r.currPoint.z = gcry_mpi_copy(point->z);
 
+    //Нейтральный элемент
     struct montgomeryEllipticCurve q;
 
     q.p = gcry_mpi_copy(mec->p);
@@ -107,9 +107,10 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
 	}
     }
 
-    point->x =gcry_mpi_copy(q.currPoint.x);
-    point->z =gcry_mpi_copy(q.currPoint.z);
+    point->x = gcry_mpi_copy(q.currPoint.x);
+    point->z = gcry_mpi_copy(q.currPoint.z);
 
+    //Проверка на ноль, чтобы на него не поделить случайно
     if(gcry_mpi_cmp(point->z, zero) != 0){	
         gcry_mpi_invm(inverted, point->z, mec->p);
 	gcry_mpi_mulm(point->x, point->x, inverted, mec->p);
@@ -121,6 +122,18 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
 
     gcry_mpi_release(inverted);  
     gcry_mpi_release(zero);
+    gcry_mpi_release(r.currPoint.x);
+    gcry_mpi_release(r.currPoint.y);
+    gcry_mpi_release(r.currPoint.z);
+    gcry_mpi_release(r.A);
+    gcry_mpi_release(r.B);
+    gcry_mpi_release(r.p);
+    gcry_mpi_release(q.currPoint.x);
+    gcry_mpi_release(q.currPoint.y);
+    gcry_mpi_release(q.currPoint.z);
+    gcry_mpi_release(q.A);
+    gcry_mpi_release(q.B);
+    gcry_mpi_release(q.p);
 
 }
 

@@ -38,8 +38,6 @@ struct montgomeryEllipticCurve {
 void pprint(struct point p);
 
 
-
-//Создание точки на эллиптической кривой вида Монтгомери
 //Значения взяты из https://tc26.ru/standard/rs/Р 50.1.114-2016.pdf
 //Использован набор параметров id-tc26-gost-3410-2012-256-paramSetA
 /**
@@ -61,7 +59,6 @@ void createGostCurve512(struct montgomeryEllipticCurve* mec);
 
 
 
-//Общий метод для создания точки на кривой
 /**
  * @param p - точка на кривой в форме Монтгомери
  * @param e - точка на кривой в форме Монтгомери
@@ -78,7 +75,7 @@ void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_m
 
 /**
  * @param mec - точка на кривой в форме Монтгомери
- * @return 0, если точка лежит на кривой и 1 в противном случае 
+ * @return 1, если точка лежит на кривой и 0 в противном случае 
  * @note проверят, лежит ли точка на кривой в форме Монтгомери
 **/
 int isMontCurvePoint(struct montgomeryEllipticCurve* mec);

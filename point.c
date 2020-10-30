@@ -106,7 +106,11 @@ void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_m
  
    gcry_mpi_mulm(mec->B, four, tmp, p); // 4/(e - d)
    
-   gcry_mpi_release(two);   
+   gcry_mpi_release(two);
+   gcry_mpi_release(e);
+   gcry_mpi_release(d);
+   gcry_mpi_release(u);
+   gcry_mpi_release(v);   
    gcry_mpi_release(four);
    gcry_mpi_release(tmp);       
 
@@ -121,20 +125,24 @@ int isMontCurvePoint(struct montgomeryEllipticCurve* mec){
 
    // Вычисляем левую часть выражения в уравнении кривой Монтгомери
    gcry_mpi_mulm(leftPart, mec->currPoint.y, mec->currPoint.y, mec->p); // y*y
-   gcry_mpi_mulm(leftPart, leftPart, mec->B, mec->p); // B*y^2
+   gcry_mpi_mulm(leftPart, leftPart, mec->B, mec->p);                   // B*y^2
    
    // Вычисляем правую часть выражения в уравнении кривой Монтгомери
-   gcry_mpi_mulm(rightPart, mec->currPoint.x, mec->currPoint.x, mec->p); // x^2
-   gcry_mpi_mulm(rightPart, rightPart, mec->currPoint.x, mec->p); // x^3
-   gcry_mpi_mulm(tmp, mec->currPoint.x, mec->currPoint.x, mec->p); // x^2
-   gcry_mpi_mulm(tmp, tmp, mec->A, mec->p); // A*x^2
-   gcry_mpi_addm(rightPart, rightPart, tmp, mec->p); // x^3+A*x^2
-   gcry_mpi_addm(rightPart, rightPart, mec->currPoint.x, mec->p); // x^3+A*x^2+x
+   gcry_mpi_mulm(rightPart, mec->currPoint.x, mec->currPoint.x, mec->p);// x^2
+   gcry_mpi_mulm(rightPart, rightPart, mec->currPoint.x, mec->p);       // x^3
+   gcry_mpi_mulm(tmp, mec->currPoint.x, mec->currPoint.x, mec->p);      // x^2
+   gcry_mpi_mulm(tmp, tmp, mec->A, mec->p);                             // A*x^2
+   gcry_mpi_addm(rightPart, rightPart, tmp, mec->p);                    // x^3+A*x^2
+   gcry_mpi_addm(rightPart, rightPart, mec->currPoint.x, mec->p);       // x^3+A*x^2+x
    	
    if(gcry_mpi_cmp(leftPart, rightPart) == 0) {
-	printf("On curve\n\n");
+	printf("Точка лежит на кривой\n\n");
 	return 1;
    }
-   printf("Not on curve\n\n");
+   printf("Точка не лежит на кривой\n\n");
    return 0;
+
+   gcry_mpi_release(leftPart);
+   gcry_mpi_release(rightPart);
+   gcry_mpi_release(tmp);
 };
