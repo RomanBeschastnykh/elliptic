@@ -95,8 +95,6 @@ int main() {
     testPoint1.z = gcry_mpi_copy(c.currPoint.z);
     gcry_mpi_subm(q, q, two, c.p); // После предыдущего теста значение стало q + 1, поэтому надо вычесть двойку
     montgomeryLadder(&c, &testPoint1, &q);
-    gcry_mpi_dump(testPoint1.x);
-    printf("qqqqq");
     if(gcry_mpi_cmp(testPoint1.x, c.currPoint.x) == 0){
          printf("------ ТЕСТ 4 завершился успешно\n\n");
     }

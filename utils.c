@@ -113,7 +113,7 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
     if(gcry_mpi_cmp(point->z, zero) != 0){
         gcry_mpi_invm(inverted, point->z, mec->p);
 	gcry_mpi_mulm(point->x, point->x, inverted, mec->p);
-	gcry_mpi_mulm(point->y, point->z, inverted, mec->p);
+	gcry_mpi_mulm(point->y, point->y, inverted, mec->p);
 	gcry_mpi_mulm(point->z, point->z, inverted, mec->p);
     }else{
 	gcry_mpi_invm(inverted, point->x, mec->p);
