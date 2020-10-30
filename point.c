@@ -4,11 +4,11 @@
 
 void pprint(struct point p){
    gcry_mpi_dump(p.x);
-   printf("\n X-axis point     \n\n");
+   printf("\n X-axis point\n\n");
    gcry_mpi_dump(p.y);
-   printf("\n Y-axis point     \n\n");
+   printf("\n Y-axis point\n\n");
    gcry_mpi_dump(p.z);
-   printf("\n Z-axis point     \n\n");
+   printf("\n Z-axis point\n\n");
 
 };
 
@@ -26,14 +26,14 @@ void createGostCurve256(struct montgomeryEllipticCurve* mec){
    gcry_mpi_t d = gcry_mpi_new(0);
    gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, "605F6B7C183FA81578BC39CFAD518132B9DF62897009AF7E522C32D6DC7BFFB", 0, 0);
    
-   //coordinaty
+   // Координаты точки в кривой формы Эдвардса - u, v
    gcry_mpi_t u = gcry_mpi_new(0);
    gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, "D", 0, 0);
       
    gcry_mpi_t v = gcry_mpi_new(0);
    gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, "60CA1E32AA475B348488C38FAB07649CE7EF8DBE87F22E81F92B2592DBA300E7", 0, 0);
    
-   createAnyCurveByParameters(p, e, d, u, v, mec); 
+   createAnyCurveByParameters(&p, &e, &d, &u, &v, mec); 
 };
 
 
@@ -51,19 +51,18 @@ void createGostCurve512(struct montgomeryEllipticCurve* mec){
    gcry_mpi_t d = gcry_mpi_new(0);
    gcry_mpi_scan(&d, GCRYMPI_FMT_HEX, "9E4F5D8C017D8D9F13A5CF3CDF5BFE4DAB402D54198E31EBDE28A0621050439CA6B39E0A515C06B304E2CE43E79E369E91A0CFC2BC2A22B4CA302DBB33EE7550", 0, 0);
    
-   //coordinaty
+   // Координаты точки в кривой формы Эдвардса - u, v
    gcry_mpi_t u = gcry_mpi_new(0);
    gcry_mpi_scan(&u, GCRYMPI_FMT_HEX, "12", 0, 0);
       
    gcry_mpi_t v = gcry_mpi_new(0);
    gcry_mpi_scan(&v, GCRYMPI_FMT_HEX, "469AF79D1FB1F5E16B99592B77A01E2A0FDFB0D01794368D9A56117F7B38669522DD4B650CF789EEBF068C5D139732F0905622C04B2BAAE7600303EE73001A3D", 0, 0);
    
-   createAnyCurveByParameters(p, e, d, u, v, mec);
+   createAnyCurveByParameters(&p, &e, &d, &u, &v, mec);
 };
 
 
-//https://core.ac.uk/download/pdf/146445895.pdf - переход из формы Эдвардса в форму Монтгомери (используются утверждения 2.9 и 2.10, стр. 48)
-void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_mpi_t u, gcry_mpi_t v, struct montgomeryEllipticCurve* mec){
+void createAnyCurveByParameters(gcry_mpi_t* p, gcry_mpi_t* e, gcry_mpi_t* d, gcry_mpi_t* u, gcry_mpi_t* v, struct montgomeryEllipticCurve* mec){
 
    gcry_mpi_t one = gcry_mpi_new(0);
    gcry_mpi_t two = gcry_mpi_new(0);   
@@ -80,37 +79,37 @@ void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_m
    mec->B = gcry_mpi_new(0);    
    
    //вычислим точку X на кривой в форме Монтгомери: X = (1+v)/(1-v)
-   gcry_mpi_addm(mec->currPoint.x, one, v, p); //1 + v
-   gcry_mpi_subm(tmp, one, v, p); //1 - v
-   gcry_mpi_invm(tmp, tmp, p); // 1/(1 - v)
-   gcry_mpi_mulm(mec->currPoint.x, mec->currPoint.x, tmp, p); // итог X
+   gcry_mpi_addm(mec->currPoint.x, one, *v, *p);               //1 + v
+   gcry_mpi_subm(tmp, one, *v, *p);                            //1 - v
+   gcry_mpi_invm(tmp, tmp, *p);                                // 1/(1 - v)
+   gcry_mpi_mulm(mec->currPoint.x, mec->currPoint.x, tmp, *p); // итог X
    
       
    //вычислим точку Y на кривой в форме Монтгомери: Y = (1 + v)/u*(1 - v) 
-   gcry_mpi_addm(mec->currPoint.y, one, v, p); // 1 + v 
-   gcry_mpi_subm(tmp, one, v, p); // 1 - v 
-   gcry_mpi_mulm(tmp, tmp, u, p); //u*(1 -v)
-   gcry_mpi_invm(tmp, tmp, p); //(u*(1 -v))^(-1)
-   gcry_mpi_mulm(mec->currPoint.y, mec->currPoint.y, tmp, p); //итог Y
+   gcry_mpi_addm(mec->currPoint.y, one, *v, *p);               // 1 + v 
+   gcry_mpi_subm(tmp, one, *v, *p);                            // 1 - v 
+   gcry_mpi_mulm(tmp, tmp, *u, *p);                            //u*(1 -v)
+   gcry_mpi_invm(tmp, tmp, *p);                                //(u*(1 -v))^(-1)
+   gcry_mpi_mulm(mec->currPoint.y, mec->currPoint.y, tmp, *p); //итог Y
    
    //вычислим точку Z на кривой в форме Монтгомери
-   mec->p = p;
-   mec->currPoint.z = one;  
+   mec->p = gcry_mpi_copy(*p);
+   mec->currPoint.z = gcry_mpi_copy(one);                      //Z = 1
    
    
-   gcry_mpi_addm(mec->A, e, d, p); // e + d 
-   gcry_mpi_mulm(mec->A, two, mec->A, p); // 2*(e + d)
-   gcry_mpi_subm(tmp, e, d, p); // e - d 
-   gcry_mpi_invm(tmp, tmp, p); // (e - d)^(-1)
-   gcry_mpi_mulm(mec->A, mec->A, tmp, p); // 2*(e + d)/(e - d) 
+   gcry_mpi_addm(mec->A, *e, *d, *p);      // e + d 
+   gcry_mpi_mulm(mec->A, two, mec->A, *p); // 2*(e + d)
+   gcry_mpi_subm(tmp, *e, *d, *p);         // e - d 
+   gcry_mpi_invm(tmp, tmp, *p);            // (e - d)^(-1)
+   gcry_mpi_mulm(mec->A, mec->A, tmp, *p); // 2*(e + d)/(e - d) 
  
-   gcry_mpi_mulm(mec->B, four, tmp, p); // 4/(e - d)
+   gcry_mpi_mulm(mec->B, four, tmp, *p); // 4/(e - d)
    
    gcry_mpi_release(two);
-   gcry_mpi_release(e);
-   gcry_mpi_release(d);
-   gcry_mpi_release(u);
-   gcry_mpi_release(v);   
+   gcry_mpi_release(*e);
+   gcry_mpi_release(*d);
+   gcry_mpi_release(*u);
+   gcry_mpi_release(*v);   
    gcry_mpi_release(four);
    gcry_mpi_release(tmp);       
 
@@ -146,8 +145,3 @@ int isMontCurvePoint(struct montgomeryEllipticCurve* mec){
    gcry_mpi_release(rightPart);
    gcry_mpi_release(tmp);
 };
-
-
-void copy(struct point* copy, struct point* original){
-    //copy->x = gcry_mpi_copy(original->x);
-}

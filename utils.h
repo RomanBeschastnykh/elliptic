@@ -43,4 +43,5 @@ void sumPoints(struct point* firstPoint, struct point* secondPoint, struct point
 void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, gcry_mpi_t* k);
 
 
+
 #endif

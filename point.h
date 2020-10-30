@@ -68,7 +68,7 @@ void createGostCurve512(struct montgomeryEllipticCurve* mec);
  * @return void
  * @note заполняет параметр mec константами p, e, d, u, v
 **/
-void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_mpi_t u, gcry_mpi_t v, struct montgomeryEllipticCurve* mec);
+void createAnyCurveByParameters(gcry_mpi_t* p, gcry_mpi_t* e, gcry_mpi_t* d, gcry_mpi_t* u, gcry_mpi_t* v, struct montgomeryEllipticCurve* mec);
 
 
 
@@ -79,9 +79,6 @@ void createAnyCurveByParameters(gcry_mpi_t p, gcry_mpi_t e, gcry_mpi_t d, gcry_m
  * @note проверят, лежит ли точка на кривой в форме Монтгомери
 **/
 int isMontCurvePoint(struct montgomeryEllipticCurve* mec);
-
-
-void copy(struct point* copy, struct point* original);
 
 #endif
 

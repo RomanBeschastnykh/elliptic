@@ -1,8 +1,6 @@
 #include <gcrypt.h>
 #include "utils.h"
 
-//удвоение основано на алгоритме, предложенном в статье "Speeding the Pollard and elliptic curve methods of factorization", Montgomery, 1987, стр. 261 
-// https://www.ams.org/journals/mcom/1987-48-177/S0025-5718-1987-0866113-7/S0025-5718-1987-0866113-7.pdf
 void doubleCurrentPoint(struct montgomeryEllipticCurve* currentPoint) {
    
    gcry_mpi_t summ = gcry_mpi_new(0);
@@ -47,20 +45,20 @@ void sumPoints(struct point* firstPoint, struct point* secondPoint, struct point
     gcry_mpi_t fSumm = gcry_mpi_new(0);
     gcry_mpi_t sDiff = gcry_mpi_new(0);
  
-    gcry_mpi_subm(fDiff, firstPoint->x, firstPoint->z, *p);   // X1-Z1
-    gcry_mpi_addm(sSumm, secondPoint->x, secondPoint->z, *p); // X2+Z2
-    gcry_mpi_addm(fSumm, firstPoint->x, firstPoint->z, *p);   // X1+Z1
-    gcry_mpi_subm(sDiff, secondPoint->x, secondPoint->z, *p); // X2-Z2
-    gcry_mpi_mulm(fDiff, fDiff, sSumm, *p);                   // (X3-Z3)*(X2+Z2)
-    gcry_mpi_mulm(fSumm, fSumm, sDiff, *p);                   // (X3-Z3)*(X2+Z2)
+    gcry_mpi_subm(fDiff, firstPoint->x, firstPoint->z, *p);
+    gcry_mpi_addm(sSumm, secondPoint->x, secondPoint->z, *p);
+    gcry_mpi_addm(fSumm, firstPoint->x, firstPoint->z, *p);
+    gcry_mpi_subm(sDiff, secondPoint->x, secondPoint->z, *p);
+    gcry_mpi_mulm(fDiff, fDiff, sSumm, *p);
+    gcry_mpi_mulm(fSumm, fSumm, sDiff, *p);
 
-    gcry_mpi_addm(sSumm, fDiff, fSumm, *p);                   // (X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2)
-    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
-    gcry_mpi_mulm(firstPoint->x, initialPoint->z, sSumm, *p); // Z1 * ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_addm(sSumm, fDiff, fSumm, *p);                   // (X2-Z2)*(X3+Z3) + (X3-Z3)*(X2+Z2)
+    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X2-Z2)*(X3+Z3) + (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_mulm(firstPoint->x, initialPoint->z, sSumm, *p); // Z1 * ((X2-Z2)*(X3+Z3) + (X3-Z3)*(X2+Z2))^2
 		
-    gcry_mpi_subm(sSumm, fDiff, fSumm, *p);                   // (X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2)
-    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
-    gcry_mpi_mulm(firstPoint->z, initialPoint->x, sSumm, *p); // Z1 * ((X3-Z3)*(X2+Z2) + (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_subm(sSumm, fDiff, fSumm, *p);                   // (X2-Z2)*(X3+Z3) - (X3-Z3)*(X2+Z2)
+    gcry_mpi_mulm(sSumm, sSumm, sSumm, *p);                   // ((X2-Z2)*(X3+Z3) - (X3-Z3)*(X2+Z2))^2
+    gcry_mpi_mulm(firstPoint->z, initialPoint->x, sSumm, *p); // X1 * ((X2-Z2)*(X3+Z3) - (X3-Z3)*(X2+Z2))^2
 
     gcry_mpi_release(fSumm);
     gcry_mpi_release(sSumm);
@@ -75,7 +73,7 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
     gcry_mpi_t zero = gcry_mpi_new(0);
     gcry_mpi_scan(&zero, GCRYMPI_FMT_HEX, "0", 0, 0);
 
-    int bits = gcry_mpi_get_nbits(*k);
+    unsigned int bits = gcry_mpi_get_nbits(*k);
 
     //копия входной точки на кривой
     struct montgomeryEllipticCurve r;
@@ -108,12 +106,14 @@ void montgomeryLadder(struct montgomeryEllipticCurve* mec, struct point* point, 
     }
 
     point->x = gcry_mpi_copy(q.currPoint.x);
+    point->y = gcry_mpi_copy(q.currPoint.y);
     point->z = gcry_mpi_copy(q.currPoint.z);
 
     //Проверка на ноль, чтобы на него не поделить случайно
-    if(gcry_mpi_cmp(point->z, zero) != 0){	
+    if(gcry_mpi_cmp(point->z, zero) != 0){
         gcry_mpi_invm(inverted, point->z, mec->p);
 	gcry_mpi_mulm(point->x, point->x, inverted, mec->p);
+	gcry_mpi_mulm(point->y, point->z, inverted, mec->p);
 	gcry_mpi_mulm(point->z, point->z, inverted, mec->p);
     }else{
 	gcry_mpi_invm(inverted, point->x, mec->p);
